@@ -1,0 +1,20 @@
+# IDE / Editor
+.vs/
+.vscode/
+.idea/
+
+# Notes
+.obsidian/
+
+# Claude Code
+.claude/
+
+# Windows artifacts
+NUL
+
+# Build output
+build*/
+compile_commands.json
+
+# Meson
+subprojects/.wraplock

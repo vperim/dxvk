@@ -5,6 +5,9 @@
 #include "d3d9_hud.h"
 #include "d3d9_window.h"
 
+#include "../dxvk/hud/dxvk_hud_postfx.h"
+#include "../dxvk/postfx/dxvk_postfx.h"
+
 namespace dxvk {
 
   static uint16_t MapGammaControlPoint(float x) {
@@ -37,6 +40,12 @@ namespace dxvk {
     CreateBlitter();
 
     InitRamp();
+
+    // ========== POSTFX:INIT ==========
+    m_postfxManager = new DxvkPostFXManager(
+      m_device.ptr(),
+      m_device->instance()->config());
+    // ========== END:POSTFX:INIT ==========
 
     // Apply initial window mode and fullscreen state
     if (!m_presentParams.Windowed && FAILED(EnterFullscreenMode(pPresentParams, pFullscreenDisplayMode)))
@@ -877,6 +886,13 @@ namespace dxvk {
       viewInfo.layerIndex = 0u;
       viewInfo.layerCount = 1u;
 
+      // ========== POSTFX:INPUT ==========
+      if (m_postfxManager) {
+        m_postfxManager->processInput();
+        m_postfxManager->updateHud(m_postfxHud.ptr());
+      }
+      // ========== END:POSTFX:INPUT ==========
+
       m_parent->EmitCs([
         cDevice         = m_device,
         cPresenter      = m_wctx->presenter,
@@ -888,7 +904,8 @@ namespace dxvk {
         cDstRect        = dstRect,
         cSync           = sync,
         cFrameId        = m_wctx->frameId,
-        cLatency        = m_latencyTracker
+        cLatency        = m_latencyTracker,
+        cPostFXManager  = m_postfxManager
       ] (DxvkContext* ctx) {
         // Update back buffer color space as necessary
         if (cSrcView->image()->info().colorSpace != cColorSpace) {
@@ -897,6 +914,11 @@ namespace dxvk {
 
           ctx->ensureImageCompatibility(cSrcView->image(), usage);
         }
+
+        // ========== POSTFX:APPLY ==========
+        if (cPostFXManager)
+          cPostFXManager->apply(ctx, cSrcView);
+        // ========== END:POSTFX:APPLY ==========
 
         // Blit back buffer onto Vulkan swap chain
         auto contextObjects = ctx->beginExternalRendering();
@@ -1086,6 +1108,8 @@ namespace dxvk {
 
       hud->addItem<hud::HudFixedFunctionShaders>("ffshaders", -1, m_parent);
       hud->addItem<hud::HudSWVPState>("swvp", -1, m_parent);
+
+      m_postfxHud = hud->addItem<hud::HudPostFXItem>("postfx", -1);
 
 #ifdef D3D9_ALLOW_UNMAPPING
       hud->addItem<hud::HudTextureMemory>("memory", -1, m_parent);

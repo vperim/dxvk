@@ -122,6 +122,7 @@ dxvk_src = [
   'hud/dxvk_hud.cpp',
   'hud/dxvk_hud_font.cpp',
   'hud/dxvk_hud_item.cpp',
+  'hud/dxvk_hud_postfx.cpp',
   'hud/dxvk_hud_renderer.cpp',
 ]
 
@@ -131,6 +132,8 @@ if platform == 'windows'
     'dxvk_openxr.cpp',
   ]
 endif
+
+subdir('postfx')
 
 dxvk_extra_deps = [ dependency('threads') ]
 if platform == 'linux'

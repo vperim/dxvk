@@ -19,6 +19,11 @@ namespace dxvk {
 
   class D3D9Surface;
   class D3D9SwapChainEx;
+  class DxvkPostFXManager;
+
+  namespace hud {
+    class HudPostFXItem;
+  }
 
   class D3D9VkExtSwapchain final : public ID3D9VkExtSwapchain {
   public:
@@ -185,6 +190,9 @@ namespace dxvk {
 
     Rc<hud::HudClientApiItem> m_apiHud;
     Rc<hud::HudLatencyItem>   m_latencyHud;
+    Rc<hud::HudPostFXItem>    m_postfxHud;
+
+    Rc<DxvkPostFXManager>     m_postfxManager;
 
     std::optional<VkHdrMetadataEXT> m_hdrMetadata;
     bool m_unlockAdditionalFormats = false;
