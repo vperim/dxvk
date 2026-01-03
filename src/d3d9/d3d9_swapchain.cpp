@@ -888,6 +888,11 @@ namespace dxvk {
 
       // ========== POSTFX:INPUT ==========
       if (m_postfxManager) {
+        VkExtent2D backbufferExtent = {
+          uint32_t(m_srcRect.right - m_srcRect.left),
+          uint32_t(m_srcRect.bottom - m_srcRect.top)
+        };
+        m_postfxManager->beginFrame(backbufferExtent);
         m_postfxManager->processInput();
         m_postfxManager->updateHud(m_postfxHud.ptr());
       }
@@ -916,8 +921,10 @@ namespace dxvk {
         }
 
         // ========== POSTFX:APPLY ==========
-        if (cPostFXManager)
+        if (cPostFXManager) {
           cPostFXManager->apply(ctx, cSrcView);
+          cPostFXManager->endFrame();
+        }
         // ========== END:POSTFX:APPLY ==========
 
         // Blit back buffer onto Vulkan swap chain
